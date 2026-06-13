@@ -32,7 +32,8 @@ sudo -v
 while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 SUDO_KEEPALIVE_PID=$!
 #trap 'kill "$SUDO_KEEPALIVE_PID" 2>/dev/null' RETURN
-trap 'kill "$SUDO_KEEPALIVE_PID" 2>/dev/null' EXIT
+#trap 'kill "$SUDO_KEEPALIVE_PID" 2>/dev/null' EXIT
+trap 'kill -9 "$SUDO_KEEPALIVE_PID" 2>/dev/null; wait "$SUDO_KEEPALIVE_PID" 2>/dev/null' EXIT
 
 # Validate that required companion files exist before proceeding
 if [ ! -f "$SETUP_DIR/lnx3_set_env.sh" ]; then
@@ -204,24 +205,47 @@ echo "Copying files into the class folder..."
 # Copy the set environment shell script to the class folder
 cp "$SETUP_DIR/lnx3_set_env.sh" "$CLASS_FOLDER"
 
-# Download the solution images to the solution images folder
-cd "$CLASS_FOLDER"
-wget "https://github.com/JMSchaffer/26027_LNX3_setup/releases/download/release_v1.0/solution_images.tar.gz"
-tar -xvf "solution_images.tar.gz" -C "$IMAGE_DIR"
-rm "solution_images.tar.gz"
-if [ ! -f "$IMAGE_DIR/lab3_br_linux_standard_smp.img" ]; then
+#======================================================================
+# Download lab solution images
+# for the PIC64GX1000 Curiosity Kit
+if [ "$INTERACTIVE_MODE" == "1" ]; then
+	echo
+	read -r -n 1 -p "Download lab solution images to the solutions directory? (y/n): " USER_RESPONSE
+	echo
+fi
+if [ "$USER_RESPONSE" == "y" ]; then
+	# Download the solution images to the solution images folder
+	cd "$CLASS_FOLDER"
+	wget "https://github.com/JMSchaffer/26027_LNX3_setup/releases/download/release_v1.0/solution_images.tar.gz"
+	tar -xvf "solution_images.tar.gz" -C "$IMAGE_DIR"
+	rm "solution_images.tar.gz"
+	if [ ! -f "$IMAGE_DIR/lab3_br_linux_standard_smp.img" ]; then
 		echo "ERROR: $IMAGE_DIR/lab3_br_linux_standard_smp.img NOT found"
 		return
-fi
-if [ ! -f "$IMAGE_DIR/lab4_zephyr_image.bin" ]; then
+	fi
+	if [ ! -f "$IMAGE_DIR/lab4_zephyr_image.bin" ]; then
 		echo "ERROR: $IMAGE_DIR/lab4_zephyr_image.bin NOT found"
 		return
-fi
-if [ ! -f "$IMAGE_DIR/lab5_br_linux_zephyr_amp.img" ]; then
+	fi
+	if [ ! -f "$IMAGE_DIR/lab5_br_linux_zephyr_amp.img" ]; then
 		echo "ERROR: $IMAGE_DIR/lab5_br_linux_zephyr_amp.img NOT found"
 		return
+	fi
+	echo "DONE"
+	echo
+	echo "Downloading the PIC64GX Ubuntu image..."
+	echo "================================"
+	cd "$IMAGE_DIR" || { echo "ERROR: Failed to change directory to $IMAGE_DIR for Ubuntu backup image download"; return 1; }
+	wget https://cdimage.ubuntu.com/releases/24.04/release/ubuntu-24.04.4-preinstalled-server-riscv64+pic64gx.img.xz
+
+	if [ -f "$IMAGE_DIR/ubuntu-24.04.4-preinstalled-server-riscv64+pic64gx.img.xz" ]; then
+		echo "DONE downloading the Ubuntu image"
+		echo "================================"
+	else
+		echo "ERROR: Ubuntu backup image not downloaded"
+		return
+	fi
 fi
-echo "DONE"
 
 #======================================================================
 # Check to see that the GIT user name and email values are set on this system
@@ -290,31 +314,40 @@ if [ "$USER_RESPONSE" == "y" ]; then
 	fi 
 
 	if [ ! -d "$ZEPHYR_SDK_DIR/zephyr-sdk-$REQUIRED_ZEPHYR_VERSION" ]; then
-		# The zephyr SDK directory does not exist so install everything and set up the SDK.
-		if [ ! -d "$CLASS_VENV_DIR" ]; then
-			python3 -m venv "$CLASS_VENV_DIR"
-		fi
-		source "$CLASS_VENV_DIR/bin/activate"
-		pip install west
-		cd "$HOME" || { echo "ERROR: Failed to change directory to $HOME"; return 1; }
 		echo
-		echo "Installing Zephyr SDK v$REQUIRED_ZEPHYR_VERSION"
-		echo "================================"
-		echo "Downloading the SDK"
-		wget "https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v${REQUIRED_ZEPHYR_VERSION}/zephyr-sdk-${REQUIRED_ZEPHYR_VERSION}_linux-x86_64.tar.xz"
-		echo "Extracting the SDK"
-		sudo tar xvf "zephyr-sdk-${REQUIRED_ZEPHYR_VERSION}_linux-x86_64.tar.xz" -C "$ZEPHYR_SDK_DIR/"
-		echo "Installing the SDK"
-		cd "$ZEPHYR_SDK_DIR/zephyr-sdk-${REQUIRED_ZEPHYR_VERSION}" || { echo "ERROR: Failed to change directory to $ZEPHYR_SDK_DIR/zephyr-sdk-${REQUIRED_ZEPHYR_VERSION}"; return 1; }
-		./setup.sh -t riscv64-zephyr-elf -h -c
-		cd "$HOME" || { echo "ERROR: Failed to change directory to $HOME"; return 1; }
-		rm -rf "zephyr-sdk-${REQUIRED_ZEPHYR_VERSION}_linux-x86_64.tar.xz"
+		echo "Zephyr SDK does not exist in $ZEPHYR_SDK_DIR/zephyr-sdk-$REQUIRED_ZEPHYR_VERSION."
+		read -r -n 1 -p "To download and install it now type y.  To exit LNX3 setup type n? (y/n): " USER_RESPONSE
+		echo
+		if [ "$USER_RESPONSE" == "y" ]; then
+			# The zephyr SDK directory does not exist so install everything and set up the SDK.
+			if [ ! -d "$CLASS_VENV_DIR" ]; then
+				python3 -m venv "$CLASS_VENV_DIR"
+			fi
+			source "$CLASS_VENV_DIR/bin/activate"
+			pip install west
+			cd "$HOME" || { echo "ERROR: Failed to change directory to $HOME"; return 1; }
+			echo
+			echo "Installing Zephyr SDK v$REQUIRED_ZEPHYR_VERSION"
+			echo "================================"
+			echo "Downloading the SDK"
+			wget "https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v${REQUIRED_ZEPHYR_VERSION}/zephyr-sdk-${REQUIRED_ZEPHYR_VERSION}_linux-x86_64.tar.xz"
+			echo "Extracting the SDK"
+			sudo tar xvf "zephyr-sdk-${REQUIRED_ZEPHYR_VERSION}_linux-x86_64.tar.xz" -C "$ZEPHYR_SDK_DIR/"
+			echo "Installing the SDK"
+			cd "$ZEPHYR_SDK_DIR/zephyr-sdk-${REQUIRED_ZEPHYR_VERSION}" || { echo "ERROR: Failed to change directory to $ZEPHYR_SDK_DIR/zephyr-sdk-${REQUIRED_ZEPHYR_VERSION}"; return 1; }
+			./setup.sh -t riscv64-zephyr-elf -h -c
+			cd "$HOME" || { echo "ERROR: Failed to change directory to $HOME"; return 1; }
+			rm -rf "zephyr-sdk-${REQUIRED_ZEPHYR_VERSION}_linux-x86_64.tar.xz"
+		else
+			return
+		fi
 	else
 		echo "Zephyr SDK already installed"
 	fi
 	
 	export ZEPHYR_SDK_INSTALL_DIR="$ZEPHYR_SDK_DIR/zephyr-sdk-$REQUIRED_ZEPHYR_VERSION"
 	
+	# Verify accessibility to the SDK
 	if "${ZEPHYR_SDK_INSTALL_DIR}/riscv64-zephyr-elf/bin/riscv64-zephyr-elf-gcc" --version >/dev/null 2>&1; then
 		echo "Zephyr SDK cross-compiler is fully accessible and executable!"
 	else
@@ -583,30 +616,6 @@ if [ "$USER_RESPONSE" == "y" ]; then
 fi
 
 #======================================================================
-# Download the ubuntu image for restoring the initial out-of-box state
-# for the PIC64GX1000 Curiosity Kit
-if [ "$INTERACTIVE_MODE" == "1" ]; then
-	echo
-	read -r -n 1 -p "Download a backup copy of the Ubuntu image to the solutions directory? (y/n): " USER_RESPONSE
-	echo
-fi
-if [ "$USER_RESPONSE" == "y" ]; then
-	echo
-	echo "Downloading the PIC64GX Ubuntu image..."
-	echo "================================"
-	cd "$IMAGE_DIR" || { echo "ERROR: Failed to change directory to $IMAGE_DIR for Ubuntu backup image download"; return 1; }
-	wget https://cdimage.ubuntu.com/releases/24.04/release/ubuntu-24.04.4-preinstalled-server-riscv64+pic64gx.img.xz
-
-	if [ -f "$IMAGE_DIR/ubuntu-24.04.4-preinstalled-server-riscv64+pic64gx.img.xz" ]; then
-		echo "DONE downloading the Ubuntu image"
-		echo "================================"
-	else
-		echo "ERROR: Ubuntu backup image not downloaded"
-		return
-	fi
-fi
-
-#======================================================================
 # Install udev rules
 if [ "$INTERACTIVE_MODE" == "1" ]; then
 	echo
@@ -622,26 +631,34 @@ if [ "$USER_RESPONSE" == "y" ]; then
 	echo "================================"
 fi
 
-echo
-echo "=================================="
-echo "= Copy the Class Folder contents ="
-echo "= to the backup directory        ="
-echo "=================================="
-echo
-if [ -d "$BACKUP_FOLDER" ]; then
-	rsync -aP "$CLASS_FOLDER/" "$BACKUP_FOLDER/"
-	
-	# Create a restore script in the backup directory to clean and restore the class directory to the original
-	sudo tee "$BACKUP_FOLDER/26027_LNX3_restore.sh" << EOF > /dev/null
+if [ "$INTERACTIVE_MODE" == "1" ]; then
+	echo
+	read -r -n 1 -p "Create a backup for the class folder in $BACKUP_FOLDER ? (y/n): " USER_RESPONSE
+	echo
+fi
+if [ "$USER_RESPONSE" == "y" ]; then
+
+	echo
+	echo "=================================="
+	echo "= Copy the Class Folder contents ="
+	echo "= to the backup directory        ="
+	echo "=================================="
+	echo
+	if [ -d "$BACKUP_FOLDER" ]; then
+		rsync -aP "$CLASS_FOLDER/" "$BACKUP_FOLDER/"
+		
+		# Create a restore script in the backup directory to clean and restore the class directory to the original
+		sudo tee "$BACKUP_FOLDER/26027_LNX3_restore.sh" << EOF > /dev/null
 #!/bin/bash
 rsync -aP --delete --exclude "26027_LNX3_restore.sh" $BACKUP_FOLDER/ $CLASS_FOLDER/
 EOF
 	
-	echo "DONE copying to $BACKUP_FOLDER"
-	echo "================================"
-else
-	echo "ERROR: Backup directory $BACKUP_FOLDER does not exist.  Class directory not backed up"
-	return
+		echo "DONE copying to $BACKUP_FOLDER"
+		echo "================================"
+	else
+		echo "ERROR: Backup directory $BACKUP_FOLDER does not exist.  Class directory not backed up"
+		return
+	fi
 fi
 
 echo "=========================="
@@ -651,7 +668,10 @@ echo "=========================="
 # Go back to the user's home directory
 cd ~
 
-return
+trap - EXIT   # Manually clear the trap so it doesn't try to fire twice
+kill -9 "$SUDO_KEEPALIVE_PID" 2>/dev/null  # Instantly kill the keepalive
+wait "$SUDO_KEEPALIVE_PID" 2>/dev/null    # Instantly clear the process table
+return 0
 
 }
 _lnx3_setup "$@"
