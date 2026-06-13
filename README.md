@@ -10,10 +10,8 @@ To set up a new host machine for the class:
 	- It will first ask if you want to delete any existing materials and install everything from scratch.  Answer y to delete anything that exists in the class directory and reinstall everything.
  	- If you answer n then the script will ask you about installing each component.  You can use this to try the individual components.
 - Check for any errors reported
-- The setup script clones all necessary repositories at the required commits, applies any necessary patches, and builds all images to test the installation.
+- The setup script clones all necessary repositories at the required commits, applies any necessary patches, and tests that all tools are working.
 - Solution images are stored in a separate directory under the class directory.
-- The setup performs full buildroot Linux builds so that all required data is downloaded to the host so that all downloads are present on the lab machine.
-- Setup can take a couple hours due to generating the Linux solution images.
 - The result of successful script completion is that your machine should be set up identically to how a masters Linux lab machine will be set up.
 
 
