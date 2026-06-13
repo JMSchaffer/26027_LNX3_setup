@@ -5,8 +5,9 @@ _lnx3_setup() {
 # Update the CLASS_FOLDER variable to define the directory
 # where class materials should be installed.  Edit this appropriately
 # for the installation
-CLASS_FOLDER="$HOME/26027_LNX3"
-BACKUP_FOLDER="/home/backup/26027_LNX3"
+CLASS_DIR_NAME="26027_LNX3"
+CLASS_FOLDER="$HOME/$CLASS_DIR_NAME"
+BACKUP_FOLDER="/home/backup"
 CLASS_VENV_DIR="$CLASS_FOLDER/.venv"
 
 # Enter the required Zephyr SDK version for the class. The required version
@@ -645,15 +646,15 @@ if [ "$USER_RESPONSE" == "y" ]; then
 	echo "=================================="
 	echo
 	if [ -d "$BACKUP_FOLDER" ]; then
-		rsync -aP "$CLASS_FOLDER/" "$BACKUP_FOLDER/"
+		sudo rsync -aP "$CLASS_FOLDER/" "$BACKUP_FOLDER/$CLASS_DIR_NAME/"
 		
 		# Create a restore script in the backup directory to clean and restore the class directory to the original
-		sudo tee "$BACKUP_FOLDER/26027_LNX3_restore.sh" << EOF > /dev/null
+		sudo tee "$BACKUP_FOLDER/$CLASS_DIR_NAME/26027_LNX3_restore.sh" << EOF > /dev/null
 #!/bin/bash
-rsync -aP --delete --exclude "26027_LNX3_restore.sh" $BACKUP_FOLDER/ $CLASS_FOLDER/
+rsync -aP --delete --exclude "26027_LNX3_restore.sh" $BACKUP_FOLDER/$CLASS_DIR_NAME/ $CLASS_FOLDER/
 EOF
 	
-		echo "DONE copying to $BACKUP_FOLDER"
+		echo "DONE copying to $BACKUP_FOLDER/$CLASS_DIR_NAME"
 		echo "================================"
 	else
 		echo "ERROR: Backup directory $BACKUP_FOLDER does not exist.  Class directory not backed up"
