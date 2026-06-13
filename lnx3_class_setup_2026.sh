@@ -42,18 +42,6 @@ if [ ! -f "$SETUP_DIR/pic64gx-zephyr-examples-update-sdk.patch" ]; then
 	echo "ERROR: Required file '$SETUP_DIR/pic64gx-zephyr-examples-update-sdk.patch' not found."
 	return 1
 fi
-if [ ! -f "$SETUP_DIR/solution_images/lab3_br_linux_standard_smp.img" ]; then
-	echo "ERROR: Required file '$SETUP_DIR/solution_images/lab3_br_linux_standard_smp.img' not found."
-	return 1
-fi
-if [ ! -f "$SETUP_DIR/solution_images/lab4_zephyr_image.bin" ]; then
-	echo "ERROR: Required file '$SETUP_DIR/solution_images/lab4_zephyr_image.bin' not found."
-	return 1
-fi
-if [ ! -f "$SETUP_DIR/solution_images/lab5_br_linux_zephyr_amp.img" ]; then
-	echo "ERROR: Required file '$SETUP_DIR/solution_images/lab5_br_linux_zephyr_amp.img' not found."
-	return 1
-fi
 
 # Installation script for 26027 LNX3 class
 echo "==========================================="
@@ -215,10 +203,9 @@ echo "Copying files into the class folder..."
 # Copy the set environment shell script to the class folder
 cp "$SETUP_DIR/lnx3_set_env.sh" "$CLASS_FOLDER"
 
-# Copy the solution images to the solution images folder
-cp "$SETUP_DIR/solution_images/lab3_br_linux_standard_smp.img" "$IMAGE_DIR"
-cp "$SETUP_DIR/solution_images/lab4_zephyr_image.bin" "$IMAGE_DIR"
-cp "$SETUP_DIR/solution_images/lab5_br_linux_zephyr_amp.img" "$IMAGE_DIR"
+# Download the solution images to the solution images folder
+cd "$IMAGE_DIR"
+echo "wget the files here"
 echo "DONE"
 
 #======================================================================
