@@ -6,6 +6,7 @@ _lnx3_setup() {
 # where class materials should be installed.  Edit this appropriately
 # for the installation
 CLASS_FOLDER="$HOME/26027_LNX3"
+BACKUP_FOLDER="/home/backup/26027_LNX3"
 CLASS_VENV_DIR="$CLASS_FOLDER/.venv"
 
 # Enter the required Zephyr SDK version for the class. The required version
@@ -207,6 +208,7 @@ cp "$SETUP_DIR/lnx3_set_env.sh" "$CLASS_FOLDER"
 cd "$CLASS_FOLDER"
 wget "https://github.com/JMSchaffer/26027_LNX3_setup/releases/download/release_v1.0/solution_images.tar.gz"
 tar -xvf "solution_images.tar.gz" -C "$IMAGE_DIR"
+rm "solution_images.tar.gz"
 if [ ! -f "$IMAGE_DIR/lab3_br_linux_standard_smp.img" ]; then
 		echo "ERROR: $IMAGE_DIR/lab3_br_linux_standard_smp.img NOT found"
 		return
@@ -605,30 +607,6 @@ if [ "$USER_RESPONSE" == "y" ]; then
 fi
 
 #======================================================================
-# Download the ubuntu image for restoring the initial out-of-box state
-# for the PIC64GX1000 Curiosity Kit
-if [ "$INTERACTIVE_MODE" == "1" ]; then
-	echo
-	read -r -n 1 -p "Download a backup copy of the Ubuntu image to the solutions directory? (y/n): " USER_RESPONSE
-	echo
-fi
-if [ "$USER_RESPONSE" == "y" ]; then
-	echo
-	echo "Downloading the image..."
-	echo "================================"
-	cd "$IMAGE_DIR" || { echo "ERROR: Failed to change directory to $IMAGE_DIR for Ubuntu backup image download"; return 1; }
-	wget https://cdimage.ubuntu.com/releases/24.04/release/ubuntu-24.04.4-preinstalled-server-riscv64+pic64gx.img.xz
-
-	if [ -f "$IMAGE_DIR/ubuntu-24.04.4-preinstalled-server-riscv64+pic64gx.img.xz" ]; then
-		echo "DONE downloading the Ubuntu image"
-		echo "================================"
-	else
-		echo "ERROR: Ubuntu backup image not downloaded"
-		return
-	fi
-fi
-
-#======================================================================
 # Install udev rules
 if [ "$INTERACTIVE_MODE" == "1" ]; then
 	echo
@@ -642,6 +620,28 @@ if [ "$USER_RESPONSE" == "y" ]; then
 	source "$SETUP_DIR/install_udev.sh"
 	echo "DONE Installing udev rules"
 	echo "================================"
+fi
+
+echo
+echo "=================================="
+echo "= Copy the Class Folder contents ="
+echo "= to the backup directory        ="
+echo "=================================="
+echo
+if [ -d "$BACKUP_FOLDER" ]; then
+	rsync -aP "$CLASS_FOLDER/" "$BACKUP_FOLDER/"
+	
+	# Create a restore script in the backup directory to clean and restore the class directory to the original
+	sudo tee "$BACKUP_FOLDER/26027_LNX3_restore.sh" << EOF > /dev/null
+#!/bin/bash
+rsync -aP --delete --exclude "26027_LNX3_restore.sh" $BACKUP_FOLDER/ $CLASS_FOLDER/
+EOF
+	
+	echo "DONE copying to $BACKUP_FOLDER"
+	echo "================================"
+else
+	echo "ERROR: Backup directory $BACKUP_FOLDER does not exist.  Class directory not backed up"
+	return
 fi
 
 echo "=========================="
