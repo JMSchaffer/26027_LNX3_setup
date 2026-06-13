@@ -1,0 +1,59 @@
+diff --git a/apps/amp_example/prj.conf b/apps/amp_example/prj.conf
+index 300ce1b..e508453 100644
+--- a/apps/amp_example/prj.conf
++++ b/apps/amp_example/prj.conf
+@@ -10,3 +10,4 @@ CONFIG_CONSOLE_SUBSYS=y
+ CONFIG_CONSOLE_GETCHAR=y
+ CONFIG_CONSOLE_GETCHAR_BUFSIZE=64
+ CONFIG_CONSOLE_PUTCHAR_BUFSIZE=512
++CONFIG_PICOLIBC_USE_MODULE=y
+diff --git a/apps/amp_example_openamp/prj.conf b/apps/amp_example_openamp/prj.conf
+index 426d72b..134deba 100644
+--- a/apps/amp_example_openamp/prj.conf
++++ b/apps/amp_example_openamp/prj.conf
+@@ -13,3 +13,4 @@ CONFIG_CONSOLE_SUBSYS=y
+ CONFIG_CONSOLE_GETCHAR=y
+ CONFIG_CONSOLE_GETCHAR_BUFSIZE=64
+ CONFIG_CONSOLE_PUTCHAR_BUFSIZE=512
++CONFIG_PICOLIBC_USE_MODULE=y
+diff --git a/apps/blinky/prj.conf b/apps/blinky/prj.conf
+index b79e1d2..36502ad 100644
+--- a/apps/blinky/prj.conf
++++ b/apps/blinky/prj.conf
+@@ -1,2 +1,3 @@
+ CONFIG_GPIO=y
+ CONFIG_RV_BOOT_HART=1
++CONFIG_PICOLIBC_USE_MODULE=y
+\ No newline at end of file
+diff --git a/apps/blinky_amp/prj.conf b/apps/blinky_amp/prj.conf
+index f234f8a..500a0e0 100644
+--- a/apps/blinky_amp/prj.conf
++++ b/apps/blinky_amp/prj.conf
+@@ -1,2 +1,3 @@
+ CONFIG_GPIO=y
+-CONFIG_RV_BOOT_HART=4
+\ No newline at end of file
++CONFIG_RV_BOOT_HART=4
++CONFIG_PICOLIBC_USE_MODULE=y
+\ No newline at end of file
+diff --git a/apps/button/prj.conf b/apps/button/prj.conf
+index b79e1d2..36502ad 100644
+--- a/apps/button/prj.conf
++++ b/apps/button/prj.conf
+@@ -1,2 +1,3 @@
+ CONFIG_GPIO=y
+ CONFIG_RV_BOOT_HART=1
++CONFIG_PICOLIBC_USE_MODULE=y
+\ No newline at end of file
+diff --git a/west.yml b/west.yml
+index 4edd815..c02a742 100644
+--- a/west.yml
++++ b/west.yml
+@@ -19,6 +19,7 @@ manifest:
+           - hal_microchip
+           - open-amp
+           - libmetal
++          - picolibc
+     - name: pic64gx-rpmsg-lite
+       remote: pic64gx-zephyrproject-rtos
+       path: modules/lib/rpmsg-lite
