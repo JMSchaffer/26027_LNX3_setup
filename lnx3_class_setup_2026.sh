@@ -204,8 +204,21 @@ echo "Copying files into the class folder..."
 cp "$SETUP_DIR/lnx3_set_env.sh" "$CLASS_FOLDER"
 
 # Download the solution images to the solution images folder
-cd "$IMAGE_DIR"
-echo "wget the files here"
+cd "$CLASS_FOLDER"
+wget "https://github.com/JMSchaffer/26027_LNX3_setup/releases/download/release_v1.0/solution_images.tar.gz"
+tar -xvf "solution_images.tar.gz" -C "$IMAGE_DIR"
+if [ ! -f "$IMAGE_DIR/lab3_br_linux_standard_smp.img" ]; then
+		echo "ERROR: $IMAGE_DIR/lab3_br_linux_standard_smp.img NOT found"
+		return
+fi
+if [ ! -f "$IMAGE_DIR/lab4_zephyr_image.bin" ]; then
+		echo "ERROR: $IMAGE_DIR/lab4_zephyr_image.bin NOT found"
+		return
+fi
+if [ ! -f "$IMAGE_DIR/lab5_br_linux_zephyr_amp.img" ]; then
+		echo "ERROR: $IMAGE_DIR/lab5_br_linux_zephyr_amp.img NOT found"
+		return
+fi
 echo "DONE"
 
 #======================================================================
