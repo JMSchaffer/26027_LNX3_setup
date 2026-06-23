@@ -130,7 +130,9 @@ if [ "$USER_RESPONSE" == "y" ]; then
 
 	sudo apt-get install --assume-yes --no-install-recommends \
 		gcc-multilib g++-multilib
-
+		
+	sudo apt-get install --assume-yes --no-install-recommends screen
+	
 	echo "DONE Installing required packages"
 	echo "============================"
 
