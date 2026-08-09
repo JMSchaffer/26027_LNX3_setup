@@ -554,6 +554,7 @@ if [ "$USER_RESPONSE" == "y" ]; then
 	make pic64gx_curiosity_kit_defconfig
 	#make
 	make source
+	make toolchain
 	STATUS=$?
 	if [ $STATUS -eq 0 ]; then
 		echo "SUCCESS: buildroot default Downloads verified"
@@ -595,6 +596,7 @@ if [ "$USER_RESPONSE" == "y" ]; then
 	make pic64gx_curiosity_kit_amp_defconfig
 	#make
 	make source
+	make toolchain
 	STATUS=$?
 	if [ $STATUS -eq 0 ]; then
 		echo "SUCCESS: AMP Downloads verified"
