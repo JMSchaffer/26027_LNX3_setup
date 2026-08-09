@@ -22,7 +22,8 @@ ATTRS{product}=="MCHP-Debug", ATTR{bInterfaceNumber}!="00", \
 RUN+="/sbin/modprobe ftdi_sio", RUN+="/bin/sh -c 'echo 1514 200a > /sys/bus/usb-serial/drivers/ftdi_sio/new_id'"
 
 # Unbind ftdi_sio driver for channel A which should be the JTAG
-SUBSYSTEM=="usb", DRIVER=="ftdi_sio", ATTR{bInterfaceNumber}=="00", \
+SUBSYSTEM=="usb", DRIVER=="ftdi_sio", ATTRS{idVendor}=="1514", ATTRS{idProduct}=="200a", \
+ATTR{bInterfaceNumber}=="00", \
 RUN+="/bin/sh -c 'echo $kernel > /sys/bus/usb/drivers/ftdi_sio/unbind'"
 # Helper (optional)
 KERNEL=="ttyUSB[0-9]*", SUBSYSTEM=="tty", SUBSYSTEMS=="usb", \
